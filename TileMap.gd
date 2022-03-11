@@ -1,6 +1,6 @@
 extends TileMap
 
-const MAP_SIZE = 200
+const MAP_SIZE = 100
 const START_ALIVE_CHANCE = 40 # 40%
 const MIN_ALIVE = 3
 const MIN_BIRTH = 5
