@@ -1,6 +1,6 @@
 extends KinematicBody2D
 
-export var speed = 120
+export var speed = 50
 
 onready var melee_area = $MeleeArea
 onready var velocity = Vector2.ZERO

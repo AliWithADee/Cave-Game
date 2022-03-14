@@ -7,7 +7,9 @@ func _process(delta):
 	var player_pos = player.position
 
 func _unhandled_input(event):
-	if event.is_action("zoom_in"):
-			zoom -= ZOOM_FACTOR * zoom
-	elif event.is_action("zoom_out"):
+	if event.is_action_pressed("zoom_in"):
+		zoom -= ZOOM_FACTOR * zoom
+		print(zoom)
+	elif event.is_action_pressed("zoom_out"):
 		zoom += ZOOM_FACTOR * zoom
+		print(zoom)
