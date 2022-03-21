@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/Sprite-0007.png-25a2fcb11b4be6a91b615d341b865cdb.stex"
+path="res://.import/Miner_Sprite_Sheet.png-9aacdbb522a8cf145a243a3de5bdf402.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Sprite-0007.png"
-dest_files=[ "res://.import/Sprite-0007.png-25a2fcb11b4be6a91b615d341b865cdb.stex" ]
+source_file="res://Assets/Miner/Miner_Sprite_Sheet.png"
+dest_files=[ "res://.import/Miner_Sprite_Sheet.png-9aacdbb522a8cf145a243a3de5bdf402.stex" ]
 
 [params]
 

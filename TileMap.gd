@@ -1,60 +1,48 @@
 extends TileMap
 
 const MAP_SIZE = 100
+const CELL_SIZE = 32
 const START_ALIVE_CHANCE = 40 # 40%
 const MIN_ALIVE = 3
 const MIN_BIRTH = 5
 const STEPS = 15
 
-const ALIVE = 0
-const DEAD = 1
-const BORDER = 0
+const ALIVE = 3 # Solid tile
+const DEAD = 0 # Walkable tiles
+const WALL = 2 # Transition from walkable tile to solid tile
 
 var step = 0
-var generating = false
 
-func _ready():
-	generate_cave(true)
-
-func _unhandled_input(event):
-	if event is InputEventKey:
-		if event.is_action_pressed("generate_cave") and (not generating):
-			generate_cave(true)
-		elif event.is_action_pressed("initialize_cave") and (not generating):
-			generate_cave(false)
-		elif event.is_action_pressed("step") and (not generating):
-			simulate()
-
-func clear_cave():
-	for x in range(MAP_SIZE):
-		for y in range(MAP_SIZE):
-			set_cell(x, y, -1)
-			
 func generate_cave(simulate: bool):
 	print("Generating Cave...")
 	randomize()
 	step = 0
-	generating = true
-	clear_cave()
+	
+	for x in range(MAP_SIZE):
+		for y in range(MAP_SIZE):
+			set_cell(x, y, -1)
+			
 	initialize_cave()
 	if simulate:
 		for s in range(STEPS):
 			simulate()
-	clean_up_cave() # Adds a border around the map
-	generating = false
+			
 	print("Cave generation complete!")
 
 func initialize_cave():
 	print("Initializing cave...")
 	for x in range(MAP_SIZE):
 		for y in range(MAP_SIZE):
-			var tile = ALIVE if (randi() % 100) < START_ALIVE_CHANCE else DEAD # 0 - 99
-			if x < 3 or x > MAP_SIZE-4 or y < 3 or y > MAP_SIZE-4:
+			var tile = ALIVE if (randi() % 100) < START_ALIVE_CHANCE else DEAD
+			if x < 3 or x > MAP_SIZE-4 or y < 3 or y > MAP_SIZE-4: # Border of 3
 				tile = ALIVE
 			set_cell(x, y, tile)
+	
+	set_walls()
+	update_bitmask_region(Vector2(0,0), Vector2(MAP_SIZE-1,MAP_SIZE-1))
 	print("Initialization complete!")
 
-func numNeighbours(cell_x, cell_y):
+func num_neighbours(cell_x, cell_y):
 	var count = 0
 	for i in range(-1, 2, 1):
 		for j in range(-1, 2, 1):
@@ -63,40 +51,40 @@ func numNeighbours(cell_x, cell_y):
 				var y = cell_y+j
 				if get_cell(x, y) == ALIVE:
 					count += 1
-	
 	return count
-
+	
 func simulate():
 	step += 1
 	print("Simulating step " + str(step) + "...")
 	
 	var changed_cells = []
-	
 	for x in range(MAP_SIZE):
 		for y in range(MAP_SIZE):
 			var tile = get_cell(x, y)
 			if tile == ALIVE:
-				if numNeighbours(x, y) < MIN_ALIVE:
+				if num_neighbours(x, y) < MIN_ALIVE:
 					changed_cells.append({"x": x, "y": y, "value": DEAD})
-			elif tile == DEAD:
-				if numNeighbours(x, y) >= MIN_BIRTH:
+			elif tile != ALIVE:
+				if num_neighbours(x, y) >= MIN_BIRTH:
 					changed_cells.append({"x": x, "y": y, "value": ALIVE})
-	
+					
 	for cell in changed_cells:
 		set_cell(cell["x"], cell["y"], cell["value"])
 	
+	set_walls()
+	update_bitmask_region(Vector2(0,0), Vector2(MAP_SIZE-1,MAP_SIZE-1))
 	print("Step " + str(step) + " complete!")
+
+func set_walls():
+	print("Generating walls...")
 	
-func clean_up_cave():
-	print("Cleaning up cave...")
-	var border_width = MAP_SIZE * 2
-	for x in range(-border_width+1, MAP_SIZE+border_width-1):
-		for y in range(border_width):
-			set_cell(x, -y, BORDER)
-			set_cell(x, MAP_SIZE-1+y, BORDER)
-	
-	for y in range(-border_width+1, MAP_SIZE+border_width-1):
-		for x in range(border_width):
-			set_cell(-x, y, BORDER)
-			set_cell(MAP_SIZE-1+x, y, BORDER)
-	print("Finished cleaning up cave!")
+	for x in range(MAP_SIZE):
+		for y in range(MAP_SIZE):
+			if get_cell(x, y) == WALL:
+				set_cell(x, y, DEAD)
+			
+	for x in range(MAP_SIZE):
+		for y in range(MAP_SIZE):
+			if get_cell(x, y) != ALIVE and get_cell(x, y-1) == ALIVE:
+				set_cell(x, y, WALL)
+	print("Generated walls!")
