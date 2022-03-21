@@ -2,7 +2,7 @@ extends KinematicBody2D
 
 export var speed = 100
 
-onready var sprite: AnimatedSprite = $Sprite
+onready var anim: AnimationPlayer = $AnimationPlayer
 
 onready var facing = Vector2.DOWN
 onready var velocity = Vector2.ZERO
@@ -10,7 +10,7 @@ onready var velocity = Vector2.ZERO
 func _unhandled_input(event):
 	if event.is_action_pressed("melee"):
 		melee_attack()
-			
+		
 func _process(delta):
 	velocity = Vector2.ZERO # Reset velocity to 0 before inputs
 	
@@ -28,23 +28,15 @@ func _process(delta):
 	if velocity != Vector2.ZERO:
 		facing = velocity.normalized()
 	
-	
-	
-	# TODO: Switch to using animation player rather than animated sprite
-	
-	
-	if velocity.x > 0: sprite.play("walk_right")
-	elif velocity.x < 0: sprite.play("walk_left_pick")
-	elif velocity.y > 0: sprite.play("walk_down")
-	elif velocity.y < 0: sprite.play("walk_up")
+	if velocity.x > 0: anim.play("Walk_Right")
+	elif velocity.x < 0: anim.play("Walk_Left")
+	elif velocity.y > 0: anim.play("Walk_Down")
+	elif velocity.y < 0: anim.play("Walk_Up")
 	else:
-		# TODO: Idle animation (for each direction) here
-		sprite.stop()
-		sprite.frame = 0
-		if facing.x > 0: sprite.animation = "walk_right"
-		elif facing.x < 0: sprite.animation = "walk_left_pick"
-		elif facing.y < 0: sprite.animation = "walk_up"
-		else: sprite.animation = "walk_down"
+		if facing.x > 0: anim.play("Idle_Right")
+		elif facing.x < 0: anim.play("Idle_Left")
+		elif facing.y < 0: anim.play("Idle_Up")
+		else: anim.play("Idle_Down")
 	
 	# Move the player using velocity vector, then set velocity to the result of us attempting to move.
 	velocity = move_and_slide(velocity)

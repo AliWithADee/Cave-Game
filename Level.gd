@@ -5,7 +5,7 @@ const PLAYER = preload("res://Player.tscn")
 onready var tilemap = $TileMap
 
 func _ready():
-	tilemap.generate_cave(false)
+	tilemap.generate_cave(true)
 	spawn_player()
 	
 # DEBUG KEYBINDS
