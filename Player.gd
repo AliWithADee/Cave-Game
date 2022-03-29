@@ -1,23 +1,46 @@
 extends KinematicBody2D
 
-export var speed = 100
+# Constants
+export var move_speed = 100
+enum Equipables { PICKAXE, REVOLVER, DYNAMITE }
+onready var pickaxe_texture = preload("res://Assets/Miner/Pickaxe.png")
+onready var revolver_texture = preload("res://Assets/Miner/Revolver.png")
+onready var dynamite_texture = preload("res://Assets/Miner/Dynamite.png")
 
-onready var anim: AnimationPlayer = $AnimationPlayer
-onready var hurt_boxes = $HurtBoxes
+# Node References
+onready var item_sprite: Sprite = $ItemSprite
+onready var player_anim: AnimationPlayer = $PlayerAnimation
+onready var item_anim: AnimationPlayer = $ItemAnimation
+onready var melee_box: Area2D = $MeleeHurtBox
+onready var mine_box: Area2D = $MineHurtBox
 
+# Runtime variables
 onready var facing = Vector2.DOWN
 onready var velocity = Vector2.ZERO
-
-var attacking = false
+export(Equipables) var equiped = Equipables.PICKAXE
 
 func _ready():
-	anim.connect("animation_finished", self, "on_animation_finished")
+	item_anim.connect("animation_finished", self, "on_item_animation_finished")
+	melee_box.connect("body_entered", self, "body_enter_melee")
+	mine_box.connect("body_entered", self, "body_enter_mine")
+	update_item()
 
 func _unhandled_input(event):
-	if event.is_action_pressed("melee"):
-		melee_attack()
-		
-func _process(delta):
+	if event.is_action_pressed("attack"):
+		attack()
+	elif event.is_action_pressed("pickaxe"):
+		equiped = Equipables.PICKAXE
+		update_item()
+	elif event.is_action_pressed("revolver"):
+		equiped = Equipables.REVOLVER
+		update_item()
+	elif event.is_action_pressed("dynamite"):
+		equiped = Equipables.DYNAMITE
+		update_item()
+	elif event.is_action_pressed("show_collisions"): # DEBUG
+		get_tree().set_debug_collisions_hint(!get_tree().is_debugging_collisions_hint())
+
+func determine_velocity():
 	velocity = Vector2.ZERO # Reset velocity to 0 before inputs
 	
 	# Alter velocity vector based on player input
@@ -27,47 +50,68 @@ func _process(delta):
 	if Input.is_action_pressed("down"): velocity.y += 1
 	
 	# Normalize and scale velocity with speed value
-	velocity = velocity.normalized() * speed
+	velocity = velocity.normalized() * move_speed
+
+func determine_facing():
+	var mouse_pos = get_local_mouse_position()
 	
-	# Set facing vector to direction of movement, IF we are moving.
-	# Otherwise remain the same facing as the previous frame.
+	if -abs(mouse_pos.y) > mouse_pos.x: # Left
+		facing = Vector2.LEFT
+	elif abs(mouse_pos.y) < mouse_pos.x: # Right
+		facing = Vector2.RIGHT
+	elif -abs(mouse_pos.x) > mouse_pos.y: # Up
+		facing = Vector2.UP
+	else: # Down
+		facing = Vector2.DOWN
+	
+func _process(delta):
+	determine_velocity()
+	determine_facing()
+	
 	if velocity != Vector2.ZERO:
-		facing = velocity.normalized()
+		if facing.x > 0: player_anim.play("Walk_Right")
+		elif facing.x < 0: player_anim.play("Walk_Left")
+		elif facing.y < 0: player_anim.play("Walk_Up")
+		else: player_anim.play("Walk_Down")
+	else:
+		if facing.x > 0: player_anim.play("Idle_Right")
+		elif facing.x < 0: player_anim.play("Idle_Left")
+		elif facing.y < 0: player_anim.play("Idle_Up")
+		else: player_anim.play("Idle_Down")
 	
-	if not attacking:
-		if velocity.x > 0: anim.play("Walk_Right")
-		elif velocity.x < 0: anim.play("Walk_Left")
-		elif velocity.y > 0: anim.play("Walk_Down")
-		elif velocity.y < 0: anim.play("Walk_Up")
-		else:
-			if facing.x > 0: anim.play("Idle_Right")
-			elif facing.x < 0: anim.play("Idle_Left")
-			elif facing.y < 0: anim.play("Idle_Up")
-			else: anim.play("Idle_Down")
+	# Rotate hurt boxes to face the mouse
+	var mouse_pos = get_global_mouse_position()
+	melee_box.look_at(mouse_pos)
+	mine_box.look_at(mouse_pos)
 	
 	# Move the player using velocity vector, then set velocity to the result of us attempting to move.
 	velocity = move_and_slide(velocity)
-	
-func melee_attack():
-	if facing.x > 0:
-		anim.play("Melee_Right")
-		hurt_boxes.enable_hurt_box("MeleeRight")
-		hurt_boxes.enable_hurt_box("MineRight")
-	elif facing.x < 0:
-		anim.play("Melee_Left")
-		hurt_boxes.enable_hurt_box("MeleeLeft")
-		hurt_boxes.enable_hurt_box("MineLeft")
-	elif facing.y < 0:
-		anim.play("Melee_Up")
-		hurt_boxes.enable_hurt_box("MeleeUp")
-		hurt_boxes.enable_hurt_box("MineUp")
-	else:
-		anim.play("Melee_Down")
-		hurt_boxes.enable_hurt_box("MeleeDown")
-		hurt_boxes.enable_hurt_box("MineDown")
-	attacking = true
 
-func on_animation_finished(animation):
-	if "Melee" in animation or "Revolver" in animation or "Dynamite" in animation:
-		$HurtBoxes.disable_hurt_boxes()
-		attacking = false
+func update_item():
+	match equiped:
+		Equipables.REVOLVER: item_sprite.texture = revolver_texture
+		Equipables.DYNAMITE: item_sprite.texture = dynamite_texture
+		_: item_sprite.texture = pickaxe_texture
+
+func attack():
+	if equiped == Equipables.PICKAXE:
+		if facing.x > 0: item_anim.play("Melee_Right")
+		elif facing.x < 0: item_anim.play("Melee_Left")
+		elif facing.y < 0: item_anim.play("Melee_Up")
+		else: item_anim.play("Melee_Down")
+		
+		melee_box.get_node("CollisionShape").disabled = false
+		mine_box.get_node("CollisionShape").disabled = false
+
+func on_item_animation_finished(animation):
+	melee_box.get_node("CollisionShape").disabled = true
+	mine_box.get_node("CollisionShape").disabled = true
+
+# Body enters melee hurt box
+func body_enter_melee(other):
+	print("Melee " + other.name)
+
+# Body enters mining hurt box
+func body_enter_mine(other):
+	if other.has_method("on_player_mine"):
+		other.on_player_mine(mine_box.get_node("CollisionShape").global_position)

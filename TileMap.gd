@@ -1,6 +1,6 @@
 extends TileMap
 
-const MAP_SIZE = 100
+const MAP_SIZE = 50
 const CELL_SIZE = 32
 const START_ALIVE_CHANCE = 40 # 40%
 const MIN_ALIVE = 3
@@ -38,7 +38,7 @@ func initialize_cave():
 				tile = ALIVE
 			set_cell(x, y, tile)
 	
-	set_walls()
+	update_walls()
 	update_bitmask_region(Vector2(0,0), Vector2(MAP_SIZE-1,MAP_SIZE-1))
 	print("Initialization complete!")
 
@@ -71,13 +71,11 @@ func simulate():
 	for cell in changed_cells:
 		set_cell(cell["x"], cell["y"], cell["value"])
 	
-	set_walls()
+	update_walls()
 	update_bitmask_region(Vector2(0,0), Vector2(MAP_SIZE-1,MAP_SIZE-1))
 	print("Step " + str(step) + " complete!")
 
-func set_walls():
-	print("Generating walls...")
-	
+func update_walls():
 	for x in range(MAP_SIZE):
 		for y in range(MAP_SIZE):
 			if get_cell(x, y) == WALL:
@@ -85,6 +83,13 @@ func set_walls():
 			
 	for x in range(MAP_SIZE):
 		for y in range(MAP_SIZE):
-			if get_cell(x, y) != ALIVE and get_cell(x, y-1) == ALIVE:
+			if get_cell(x, y) == DEAD and get_cell(x, y-1) == ALIVE:
 				set_cell(x, y, WALL)
-	print("Generated walls!")
+
+func on_player_mine(pos):
+	print("mine")
+	var cell_pos = world_to_map(pos)
+	if get_cell(cell_pos.x, cell_pos.y) == ALIVE:
+		set_cell(cell_pos.x, cell_pos.y, DEAD)
+		update_walls()
+		update_bitmask_region(cell_pos-Vector2(1,1), cell_pos+Vector2(1,1))
