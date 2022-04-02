@@ -1,9 +1,11 @@
-[gd_scene load_steps=20 format=2]
+[gd_scene load_steps=23 format=2]
 
 [ext_resource path="res://Player.gd" type="Script" id=1]
 [ext_resource path="res://Assets/Miner/Miner_Sprite_Sheet.png" type="Texture" id=2]
 [ext_resource path="res://Camera.gd" type="Script" id=3]
 [ext_resource path="res://Assets/Miner/Revolver.png" type="Texture" id=4]
+[ext_resource path="res://Assets/Cursor.png" type="Texture" id=5]
+[ext_resource path="res://Cursor.gd" type="Script" id=6]
 
 [sub_resource type="RectangleShape2D" id=1]
 extents = Vector2( 9.5, 10 )
@@ -879,23 +881,38 @@ height = 20.8
 [sub_resource type="CircleShape2D" id=15]
 radius = 8.0399
 
+[sub_resource type="Animation" id=16]
+resource_name = "Idle"
+length = 6.0
+loop = true
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:rotation_degrees")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 6 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 0,
+"values": [ 0.0, 360.0 ]
+}
+
 [node name="Player" type="KinematicBody2D"]
 scale = Vector2( 1.25, 1.25 )
 collision_layer = 2
 collision_mask = 5
 script = ExtResource( 1 )
-equiped = 2
 
 [node name="BodySprite" type="Sprite" parent="."]
 texture = ExtResource( 2 )
 offset = Vector2( 0.5, -6 )
 hframes = 6
 vframes = 8
-frame = 41
 
 [node name="ItemSprite" type="Sprite" parent="."]
-position = Vector2( -7, 5.5 )
-rotation = -0.436332
+position = Vector2( -2.5, 6 )
+rotation = -2.39359
 texture = ExtResource( 4 )
 centered = false
 offset = Vector2( -18, -22 )
@@ -905,7 +922,6 @@ flip_h = true
 shape = SubResource( 1 )
 
 [node name="Camera" type="Camera2D" parent="."]
-visible = false
 current = true
 zoom = Vector2( 0.5, 0.5 )
 limit_left = 0
@@ -938,7 +954,6 @@ collision_mask = 4
 [node name="CollisionShape" type="CollisionShape2D" parent="MeleeHurtBox"]
 position = Vector2( 23, 0 )
 shape = SubResource( 14 )
-disabled = true
 
 [node name="MineHurtBox" type="Area2D" parent="."]
 collision_layer = 2
@@ -946,4 +961,13 @@ collision_layer = 2
 [node name="CollisionShape" type="CollisionShape2D" parent="MineHurtBox"]
 position = Vector2( 23, 0 )
 shape = SubResource( 15 )
-disabled = true
+
+[node name="Cursor" type="Sprite" parent="."]
+position = Vector2( 48.2659, -8.75521 )
+scale = Vector2( 0.5, 0.5 )
+z_index = 5
+texture = ExtResource( 5 )
+script = ExtResource( 6 )
+
+[node name="CursorAnimation" type="AnimationPlayer" parent="Cursor"]
+anims/Idle = SubResource( 16 )

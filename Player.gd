@@ -13,16 +13,17 @@ onready var player_anim: AnimationPlayer = $PlayerAnimation
 onready var item_anim: AnimationPlayer = $ItemAnimation
 onready var melee_box: Area2D = $MeleeHurtBox
 onready var mine_box: Area2D = $MineHurtBox
+onready var cursor: Sprite = $Cursor
 
 # Runtime variables
-onready var facing = Vector2.DOWN
+onready var facing = Vector2.DOWN # Facing should never be 0 so set to DOWN by default
 onready var velocity = Vector2.ZERO
 export(Equipables) var equiped = Equipables.PICKAXE
 
 func _ready():
 	item_anim.connect("animation_finished", self, "on_item_animation_finished")
 	melee_box.connect("body_entered", self, "body_enter_melee")
-	mine_box.connect("body_entered", self, "body_enter_mine")
+	mine_box.connect("body_exit", self, "body_exit_mine_box")
 	update_item()
 
 func _unhandled_input(event):
@@ -65,6 +66,7 @@ func determine_facing():
 		facing = Vector2.DOWN
 	
 func _process(delta):
+	# Update vectors
 	determine_velocity()
 	determine_facing()
 	
@@ -100,18 +102,13 @@ func attack():
 		elif facing.y < 0: item_anim.play("Melee_Up")
 		else: item_anim.play("Melee_Down")
 		
-		melee_box.get_node("CollisionShape").disabled = false
-		mine_box.get_node("CollisionShape").disabled = false
+		damage_enemies()
+		damage_tiles()
 
-func on_item_animation_finished(animation):
-	melee_box.get_node("CollisionShape").disabled = true
-	mine_box.get_node("CollisionShape").disabled = true
+func damage_enemies():
+	pass
 
-# Body enters melee hurt box
-func body_enter_melee(other):
-	print("Melee " + other.name)
-
-# Body enters mining hurt box
-func body_enter_mine(other):
-	if other.has_method("on_player_mine"):
-		other.on_player_mine(mine_box.get_node("CollisionShape").global_position)
+func damage_tiles():
+	for other in mine_box.get_overlapping_bodies():
+		if other.has_method("on_player_mine"):
+			other.on_player_mine(mine_box.get_node("CollisionShape").global_position)
