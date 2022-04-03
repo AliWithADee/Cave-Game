@@ -21,9 +21,6 @@ onready var velocity = Vector2.ZERO
 export(Equipables) var equiped = Equipables.PICKAXE
 
 func _ready():
-	item_anim.connect("animation_finished", self, "on_item_animation_finished")
-	melee_box.connect("body_entered", self, "body_enter_melee")
-	mine_box.connect("body_exit", self, "body_exit_mine_box")
 	update_item()
 
 func _unhandled_input(event):

@@ -3,7 +3,7 @@
 [ext_resource path="res://Player.gd" type="Script" id=1]
 [ext_resource path="res://Assets/Miner/Miner_Sprite_Sheet.png" type="Texture" id=2]
 [ext_resource path="res://Camera.gd" type="Script" id=3]
-[ext_resource path="res://Assets/Miner/Revolver.png" type="Texture" id=4]
+[ext_resource path="res://Assets/Miner/Pickaxe.png" type="Texture" id=4]
 [ext_resource path="res://Assets/Cursor.png" type="Texture" id=5]
 [ext_resource path="res://Cursor.gd" type="Script" id=6]
 
@@ -683,7 +683,7 @@ tracks/4/keys = {
 }
 
 [sub_resource type="Animation" id=11]
-length = 0.14
+length = 0.16
 step = 0.01
 tracks/0/type = "value"
 tracks/0/path = NodePath("BodySprite:z_index")
@@ -909,10 +909,11 @@ texture = ExtResource( 2 )
 offset = Vector2( 0.5, -6 )
 hframes = 6
 vframes = 8
+frame = 18
 
 [node name="ItemSprite" type="Sprite" parent="."]
-position = Vector2( -2.5, 6 )
-rotation = -2.39359
+position = Vector2( -7, 5.5 )
+rotation = -2.0944
 texture = ExtResource( 4 )
 centered = false
 offset = Vector2( -18, -22 )
