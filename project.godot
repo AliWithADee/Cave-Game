@@ -11,8 +11,14 @@ config_version=4
 [application]
 
 config/name="Cave Generation"
-run/main_scene="res://Level.tscn"
+run/main_scene="res://World/Level/Level.tscn"
 config/icon="res://icon.png"
+
+[autoload]
+
+Globals="*res://World/Globals.gd"
+GameManager="*res://Main/GameManager.gd"
+PlayerData="*res://Main/PlayerData.gd"
 
 [display]
 

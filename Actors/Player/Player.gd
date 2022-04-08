@@ -1,11 +1,11 @@
 extends KinematicBody2D
 
 # Constants
-export var move_speed = 100
+export(int) var move_speed = 100
 enum Equipables { PICKAXE, REVOLVER, DYNAMITE }
-onready var pickaxe_texture = preload("res://Assets/Miner/Pickaxe.png")
-onready var revolver_texture = preload("res://Assets/Miner/Revolver.png")
-onready var dynamite_texture = preload("res://Assets/Miner/Dynamite.png")
+const pickaxe_texture = preload("res://Assets/Miner/Pickaxe.png")
+const revolver_texture = preload("res://Assets/Miner/Revolver.png")
+const dynamite_texture = preload("res://Assets/Miner/Dynamite.png")
 
 # Node References
 onready var item_sprite: Sprite = $ItemSprite
@@ -14,10 +14,9 @@ onready var melee_box: Area2D = $MeleeHurtBox
 onready var mine_box: Area2D = $MineHurtBox
 
 # Runtime variables
+export(Equipables) var equiped = Equipables.PICKAXE
 onready var facing = Vector2.DOWN # Facing should never be 0 so set to DOWN by default
 onready var velocity = Vector2.ZERO
-export(Equipables) var equiped = Equipables.PICKAXE
-
 var attacking = false
 
 func _ready():
@@ -79,7 +78,6 @@ func _process(delta):
 	mine_box.look_at(mouse_pos)
 	
 	# Move the player using velocity vector, then set velocity to the result of us attempting to move.
-	#print(velocity)
 	velocity = move_and_slide(velocity)
 
 func equip(new_id: int):
@@ -113,7 +111,6 @@ const MAX_ENEMIES = 4
 func damage_enemies():
 	var bodies = melee_box.get_overlapping_bodies()
 	for i in range(min(MAX_ENEMIES, bodies.size())):
-		print(i)
 		var enemy = bodies[i]
 		if enemy.has_method("on_player_hit"):
 			enemy.on_player_hit()
