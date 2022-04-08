@@ -97,18 +97,24 @@ func clear_walls(top_left = Vector2(0,0), bottom_right = Vector2(MAP_SIZE-1, MAP
 		for y in range(top_left.y, bottom_right.y+1):
 			walls.set_cell(x, y, EMPTY)
 
-func set_wall_if_empty(x, y, cell):
+func place_wall_if_empty(x, y, cell):
 	if walls.get_cell(x, y) != EMPTY: return false
 	walls.set_cell(x, y, cell)
 	return true
 
 # Function used to place a bottom half wall.
 # If the wall should instead be a corner, then it is set to the correct corner piece
-func set_neighbour_else_corner(x, y, varient):
-	# If there is rock beneath this tile, set the cell to the original
-	if rock.get_cell(x, y+1) == ROCK:
-		walls.set_cell(x, y, WALL_BOTTOM[varient])
-		set_wall_if_empty(x, y-1, WALL_TOP[varient])
+func place_wall_or_corner(x, y, wall_varient):
+	var down = rock.get_cell(x, y+1) == ROCK
+	var down_left = rock.get_cell(x-1, y+1) == ROCK
+	var down_right = rock.get_cell(x+1, y+1) == ROCK
+	
+	# If there is rock beneath this tile
+	# AND there is rock down and to the left OR down and to the right of this tile,
+	# then place the original bottom and top walls varients
+	if down and (down_left or down_right):
+		walls.set_cell(x, y, WALL_BOTTOM[wall_varient])
+		place_wall_if_empty(x, y-1, WALL_TOP[wall_varient])
 		return true
 		
 	var left = rock.get_cell(x-1, y) == ROCK
@@ -124,19 +130,19 @@ func set_neighbour_else_corner(x, y, varient):
 		# Set to middle corner, etc
 		if left_top and right_top:
 			walls.set_cell(x, y, WALL_CORNER_MIDDLE)
-			set_wall_if_empty(x, y-1, WALL_TOP["middle"])
+			place_wall_if_empty(x, y-1, WALL_TOP["middle"])
 		elif left_top:
 			walls.set_cell(x, y, WALL_CORNER_LEFT_EDGE)
-			set_wall_if_empty(x, y-1, WALL_TOP["right"])
+			place_wall_if_empty(x, y-1, WALL_TOP["right"])
 		elif right_top:
 			walls.set_cell(x, y, WALL_CORNER_RIGHT_EDGE)
-			set_wall_if_empty(x, y-1, WALL_TOP["left"])
+			place_wall_if_empty(x, y-1, WALL_TOP["left"])
 	elif left:
 		walls.set_cell(x, y, WALL_CORNER_RIGHT)
-		set_wall_if_empty(x, y-1, WALL_TOP["left"])
+		place_wall_if_empty(x, y-1, WALL_TOP["left"])
 	else:
 		walls.set_cell(x, y, WALL_CORNER_LEFT)
-		set_wall_if_empty(x, y-1, WALL_TOP["right"])
+		place_wall_if_empty(x, y-1, WALL_TOP["right"])
 		
 	return false
 
@@ -157,140 +163,23 @@ func update_walls(top_left = Vector2(0,0), bottom_right = Vector2(MAP_SIZE-1, MA
 				# Place a bottom wall below this tile in the correct orientation
 				if left and right: # Rock either side
 					walls.set_cell(x, y+1, WALL_BOTTOM["middle"])
-					set_wall_if_empty(x, y, WALL_TOP["middle"])
+					place_wall_if_empty(x, y, WALL_TOP["middle"])
 				elif left: # Rock left
 					walls.set_cell(x, y+1, WALL_BOTTOM["right"])
-					set_wall_if_empty(x, y, WALL_TOP["right"])
+					place_wall_if_empty(x, y, WALL_TOP["right"])
 				elif right: # Rock right
 					walls.set_cell(x, y+1, WALL_BOTTOM["left"])
-					set_wall_if_empty(x, y, WALL_TOP["left"])
+					place_wall_if_empty(x, y, WALL_TOP["left"])
 				else: # Empty either side
 					walls.set_cell(x, y+1, WALL_BOTTOM["single"])
-					set_wall_if_empty(x, y, WALL_TOP["single"])
+					place_wall_if_empty(x, y, WALL_TOP["single"])
 				
 				# If left neighbour is rock and the tile below it is also rock
-				# Place a bottom wall INSIDE the wall to connect tile together.
-				# If the wall should be a corner instead, then set the correct corner instead.
+				# Place a pair of top and bottom walls INSIDE the wall to connect tiles together.
+				# If the wall should be a corner instead, then set to the correct corner.
 				# Repeat for the right side.
 				if left and rock.get_cell(x-1, y+1) == ROCK:
-					set_neighbour_else_corner(x-1, y+1, "left")
+					place_wall_or_corner(x-1, y+1, "left")
 				if right and rock.get_cell(x+1, y+1) == ROCK:
-					set_neighbour_else_corner(x+1, y+1, "right")
-				
-				
-				
-				
-				
-				
-				
-				
-
-
-func update_walls2(top_left = Vector2(0,0), bottom_right = Vector2(MAP_SIZE-1, MAP_SIZE-1)):
-	clear_walls(top_left, bottom_right)
-	
-	# Place walls
-	for x in range(top_left.x, bottom_right.x+1):
-		for y in range(top_left.y, bottom_right.y+1):
-			
-			# Is rock and has nothing beneath it
-			if rock.get_cell(x, y) == ROCK and rock.get_cell(x, y+1) == EMPTY:
-				
-				# There is no bottom wall here already
-				if not check_corner(x, y):
+					place_wall_or_corner(x+1, y+1, "right")
 					
-					# Place top wall and bottom wall
-					
-					var left_rock = rock.get_cell(x-1, y) == ROCK
-					var right_rock = rock.get_cell(x+1, y) == ROCK
-					
-					if left_rock and right_rock:
-						walls.set_cell(x, y, WALL_TOP["middle"])
-						walls.set_cell(x, y+1, WALL_BOTTOM["middle"])
-					elif left_rock:
-						walls.set_cell(x, y, WALL_TOP["right"])
-						walls.set_cell(x, y+1, WALL_BOTTOM["right"])
-					elif right_rock:
-						walls.set_cell(x, y, WALL_TOP["left"])
-						walls.set_cell(x, y+1, WALL_BOTTOM["left"])
-					else:
-						walls.set_cell(x, y, WALL_TOP["single"])
-						walls.set_cell(x, y+1, WALL_BOTTOM["single"])
-				
-				# Place bottom AND top walls to the sides if in a corner
-				
-				if rock.get_cell(x-1, y+1) == ROCK and rock.get_cell(x-1, y) == ROCK:
-					if walls.get_cell(x-1, y+1) == EMPTY:
-						walls.set_cell(x-1, y+1, WALL_BOTTOM["left"])
-						if walls.get_cell(x-1, y) == EMPTY:
-							walls.set_cell(x-1, y, WALL_TOP["left"])
-						else:
-							check_corner(x-1, y)
-					else:
-						walls.set_cell(x-1, y+1, WALL_BOTTOM["left"])
-						if walls.get_cell(x-1, y) == EMPTY:
-							walls.set_cell(x-1, y, WALL_TOP["left"])
-						check_corner(x-1, y+1)
-				if rock.get_cell(x+1, y+1) == ROCK and rock.get_cell(x+1, y) == ROCK:
-					if walls.get_cell(x+1, y+1) == EMPTY:
-						walls.set_cell(x+1, y+1, WALL_BOTTOM["right"])
-						if walls.get_cell(x+1, y) == EMPTY:
-							walls.set_cell(x+1, y, WALL_TOP["right"])
-						else:
-							check_corner(x+1, y)
-					else:
-						walls.set_cell(x+1, y+1, WALL_BOTTOM["right"])
-						if walls.get_cell(x+1, y) == EMPTY:
-							walls.set_cell(x+1, y, WALL_TOP["right"])
-						check_corner(x+1, y+1)
-
-func check_corner(x, y):
-	# Has a bottom wall here already
-	if walls.get_cell(x, y) in WALL_BOTTOM.values():
-		var left_wall = rock.get_cell(x-1, y) == EMPTY and rock.get_cell(x-1, y-1) == ROCK
-		var right_wall = rock.get_cell(x+1, y) == EMPTY and rock.get_cell(x+1, y-1) == ROCK
-		
-		# Left and Right are both bottom walls
-		if left_wall and right_wall:
-			walls.set_cell(x, y, WALL_CORNER_MIDDLE)
-			walls.set_cell(x, y-1, WALL_TOP["middle"])
-			if walls.get_cell(x, y+1) == EMPTY:
-				walls.set_cell(x, y+1, WALL_BOTTOM["single"])
-		
-		# Only left is bottom wall
-		elif left_wall:
-			
-			# Right is rock
-			if rock.get_cell(x+1, y) == ROCK:
-				walls.set_cell(x, y, WALL_CORNER_LEFT)
-				walls.set_cell(x, y-1, WALL_TOP["right"])
-				if walls.get_cell(x, y+1) == EMPTY:
-					walls.set_cell(x, y+1, WALL_BOTTOM["left"])
-			else:
-				walls.set_cell(x, y, WALL_CORNER_LEFT_EDGE)
-				walls.set_cell(x, y-1, WALL_TOP["right"])
-				if walls.get_cell(x, y+1) == EMPTY:
-					walls.set_cell(x, y+1, WALL_BOTTOM["single"])
-		
-		# Only right is bottom wall
-		elif right_wall:
-			
-			# Left is rock
-			if rock.get_cell(x-1, y) == ROCK:
-				walls.set_cell(x, y, WALL_CORNER_RIGHT)
-				walls.set_cell(x, y-1, WALL_TOP["left"])
-				if walls.get_cell(x, y+1) == EMPTY:
-					walls.set_cell(x, y+1, WALL_BOTTOM["right"])
-			else:
-				walls.set_cell(x, y, WALL_CORNER_RIGHT_EDGE)
-				walls.set_cell(x, y-1, WALL_TOP["left"])
-				if walls.get_cell(x, y+1) == EMPTY:
-					walls.set_cell(x, y+1, WALL_BOTTOM["single"])
-		
-		# If neither left or right is bottom wall, then this shouldn't happen!
-		else:
-			print("This should not happen #1")
-		
-		return true
-		
-	return false
