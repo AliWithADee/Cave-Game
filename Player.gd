@@ -10,15 +10,15 @@ onready var dynamite_texture = preload("res://Assets/Miner/Dynamite.png")
 # Node References
 onready var item_sprite: Sprite = $ItemSprite
 onready var player_anim: AnimationPlayer = $PlayerAnimation
-onready var item_anim: AnimationPlayer = $ItemAnimation
 onready var melee_box: Area2D = $MeleeHurtBox
 onready var mine_box: Area2D = $MineHurtBox
-onready var cursor: Sprite = $Cursor
 
 # Runtime variables
 onready var facing = Vector2.DOWN # Facing should never be 0 so set to DOWN by default
 onready var velocity = Vector2.ZERO
 export(Equipables) var equiped = Equipables.PICKAXE
+
+var attacking = false
 
 func _ready():
 	update_item()
@@ -27,19 +27,14 @@ func _unhandled_input(event):
 	if event.is_action_pressed("attack"):
 		attack()
 	elif event.is_action_pressed("pickaxe"):
-		equiped = Equipables.PICKAXE
-		update_item()
+		equip(Equipables.PICKAXE)
 	elif event.is_action_pressed("revolver"):
-		equiped = Equipables.REVOLVER
-		update_item()
+		equip(Equipables.REVOLVER)
 	elif event.is_action_pressed("dynamite"):
-		equiped = Equipables.DYNAMITE
-		update_item()
-	elif event.is_action_pressed("show_collisions"): # DEBUG
-		get_tree().set_debug_collisions_hint(!get_tree().is_debugging_collisions_hint())
+		equip(Equipables.DYNAMITE)
 
 func determine_velocity():
-	velocity = Vector2.ZERO # Reset velocity to 0 before inputs
+	if not attacking: velocity = Vector2.ZERO # Reset velocity to 0 before inputs
 	
 	# Alter velocity vector based on player input
 	if Input.is_action_pressed("left"): velocity.x -= 1
@@ -52,7 +47,7 @@ func determine_velocity():
 
 func determine_facing():
 	var mouse_pos = get_local_mouse_position()
-	
+
 	if -abs(mouse_pos.y) > mouse_pos.x: # Left
 		facing = Vector2.LEFT
 	elif abs(mouse_pos.y) < mouse_pos.x: # Right
@@ -63,20 +58,20 @@ func determine_facing():
 		facing = Vector2.DOWN
 	
 func _process(delta):
-	# Update vectors
-	determine_velocity()
 	determine_facing()
 	
-	if velocity != Vector2.ZERO:
-		if facing.x > 0: player_anim.play("Walk_Right")
-		elif facing.x < 0: player_anim.play("Walk_Left")
-		elif facing.y < 0: player_anim.play("Walk_Up")
-		else: player_anim.play("Walk_Down")
-	else:
-		if facing.x > 0: player_anim.play("Idle_Right")
-		elif facing.x < 0: player_anim.play("Idle_Left")
-		elif facing.y < 0: player_anim.play("Idle_Up")
-		else: player_anim.play("Idle_Down")
+	if not attacking:
+		determine_velocity()
+		if velocity != Vector2.ZERO:
+			if facing.x > 0: player_anim.play("WalkRight")
+			elif facing.x < 0: player_anim.play("WalkLeft")
+			elif facing.y < 0: player_anim.play("WalkUp")
+			else: player_anim.play("WalkDown")
+		else:
+			if facing.x > 0: player_anim.play("IdleRight")
+			elif facing.x < 0: player_anim.play("IdleLeft")
+			elif facing.y < 0: player_anim.play("IdleUp")
+			else: player_anim.play("IdleDown")
 	
 	# Rotate hurt boxes to face the mouse
 	var mouse_pos = get_global_mouse_position()
@@ -84,26 +79,44 @@ func _process(delta):
 	mine_box.look_at(mouse_pos)
 	
 	# Move the player using velocity vector, then set velocity to the result of us attempting to move.
+	#print(velocity)
 	velocity = move_and_slide(velocity)
+
+func equip(new_id: int):
+	equiped = new_id
+	update_item()
 
 func update_item():
 	match equiped:
 		Equipables.REVOLVER: item_sprite.texture = revolver_texture
 		Equipables.DYNAMITE: item_sprite.texture = dynamite_texture
-		_: item_sprite.texture = pickaxe_texture
+		Equipables.PICKAXE: item_sprite.texture = pickaxe_texture
+		_: item_sprite.texture = null
 
 func attack():
-	if equiped == Equipables.PICKAXE:
-		if facing.x > 0: item_anim.play("Melee_Right")
-		elif facing.x < 0: item_anim.play("Melee_Left")
-		elif facing.y < 0: item_anim.play("Melee_Up")
-		else: item_anim.play("Melee_Down")
+	if not attacking and equiped == Equipables.PICKAXE:
+		attacking = true
+		
+		if facing.x > 0: player_anim.play("MeleeRight")
+		elif facing.x < 0: player_anim.play("MeleeLeft")
+		elif facing.y < 0: player_anim.play("MeleeUp")
+		else: player_anim.play("MeleeDown")
 		
 		damage_enemies()
 		damage_tiles()
-
+		
+		yield(player_anim, "animation_finished")
+		attacking = false
+	
+const MAX_ENEMIES = 4
+	
 func damage_enemies():
-	pass
+	var bodies = melee_box.get_overlapping_bodies()
+	for i in range(min(MAX_ENEMIES, bodies.size())):
+		print(i)
+		var enemy = bodies[i]
+		if enemy.has_method("on_player_hit"):
+			enemy.on_player_hit()
 
 func damage_tiles():
 	for other in mine_box.get_overlapping_bodies():
