@@ -1,0 +1,12 @@
+[gd_scene load_steps=2 format=2]
+
+[sub_resource type="CapsuleShape2D" id=1]
+
+[node name="LevelExit" type="Node2D"]
+
+[node name="Sprite" type="Sprite" parent="."]
+
+[node name="TriggerArea" type="Area2D" parent="."]
+
+[node name="CollisionShape" type="CollisionShape2D" parent="TriggerArea"]
+shape = SubResource( 1 )

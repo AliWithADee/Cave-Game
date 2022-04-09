@@ -18,11 +18,7 @@ func _unhandled_input(event):
 			cave.generate_cave(false)
 			spawn_player()
 		elif event.is_action_pressed("step"):
-			cave.simulate_rock_generation()#
-		elif event.is_action_pressed("clear_walls"):
-			cave.clear_walls()
-		elif event.is_action_pressed("update_walls"):
-			cave.update_walls()
+			cave.simulate_rock_generation()
 
 func spawn_player():
 	if has_node("Player"):
