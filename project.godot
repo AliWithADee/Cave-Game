@@ -10,18 +10,21 @@ config_version=4
 
 [application]
 
-config/name="Cave Generation"
+config/name="Cave Game"
 run/main_scene="res://World/Level/Level.tscn"
 config/icon="res://icon.png"
 
 [autoload]
 
-Globals="*res://World/Globals.gd"
+Globals="*res://Main/Globals.gd"
 GameManager="*res://Main/GameManager.gd"
 PlayerData="*res://Main/PlayerData.gd"
 
 [display]
 
+window/size/width=1280
+window/size/height=720
+window/size/borderless=true
 window/stretch/mode="2d"
 window/stretch/aspect="keep"
 
@@ -148,8 +151,9 @@ update_walls={
 [layer_names]
 
 2d_physics/layer_1="world"
-2d_physics/layer_2="player"
-2d_physics/layer_3="enemy"
+2d_physics/layer_2="destructable"
+2d_physics/layer_3="player"
+2d_physics/layer_4="enemy"
 
 [physics]
 

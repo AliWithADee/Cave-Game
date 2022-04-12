@@ -57,7 +57,14 @@ func determine_facing():
 		facing = Vector2.DOWN
 	
 func _process(delta):
+	var facing_before = facing
 	determine_facing()
+	
+	# This handles the rendering order of the body and item sprites
+	if facing != facing_before:
+		match facing:
+			Vector2.UP: move_child(get_node("BodySprite"), 1)
+			_: move_child(get_node("BodySprite"), 0)
 	
 	if not attacking:
 		determine_velocity()
@@ -101,21 +108,28 @@ func attack():
 		else: player_anim.play("MeleeDown")
 		
 		damage_enemies()
-		damage_tiles()
+		mine_objects()
 		
 		yield(player_anim, "animation_finished")
 		attacking = false
 	
-const MAX_ENEMIES = 4
+const MAX_ENEMIES_TO_DAMAGE = 4
+const MAX_OBJECTS_TO_MINE = 1
 	
 func damage_enemies():
-	var bodies = melee_box.get_overlapping_bodies()
-	for i in range(min(MAX_ENEMIES, bodies.size())):
-		var enemy = bodies[i]
+	var areas = melee_box.get_overlapping_areas()
+	for a in range(min(MAX_ENEMIES_TO_DAMAGE, areas.size())):
+		var hit_box: Area2D = areas[a]
+		var enemy = hit_box.get_parent()
+		
+		print(enemy.name)
 		if enemy.has_method("on_player_hit"):
 			enemy.on_player_hit()
 
-func damage_tiles():
-	for other in mine_box.get_overlapping_bodies():
+func mine_objects():
+	var bodies = mine_box.get_overlapping_bodies()
+	for b in range(min(MAX_OBJECTS_TO_MINE, bodies.size())):
+		var other = bodies[b]
+		
 		if other.has_method("on_player_mine"):
 			other.on_player_mine(mine_box.get_node("CollisionShape").global_position)

@@ -1,9 +1,9 @@
 extends Node2D
 
 # Node references
-onready var ground_layer = $Ground
-onready var walls_layer = $Walls
-onready var rock_layer = $Rock
+onready var ground_layer: TileMap = $GroundLayer
+onready var walls_layer: TileMap = $WallsLayer
+onready var rock_layer: TileMap = $RockLayer
 
 # Tile IDs
 const GROUND = 0
@@ -28,13 +28,13 @@ const WALL_CORNER_RIGHT_EDGE = 12
 
 func generate_cave(simulate: bool):
 	randomize()
-	initialize_cave()
+	initialise_cave()
 	if simulate:
 		var finished = simulate_rock_generation()
 		while not finished:
 			finished = simulate_rock_generation()
 
-func initialize_cave():
+func initialise_cave():
 	for x in range(Globals.MAP_SIZE):
 		for y in range(Globals.MAP_SIZE):
 			ground_layer.set_cell(x, y, GROUND)
@@ -46,6 +46,7 @@ func initialize_cave():
 				
 			rock_layer.set_cell(x, y, tile)
 	
+	generate_border()
 	update_walls()
 	rock_layer.update_bitmask_region(Vector2.ZERO, Vector2(Globals.MAP_SIZE-1,Globals.MAP_SIZE-1))
 	
@@ -84,6 +85,17 @@ func simulate_rock_generation():
 	
 	return not cells_changed
 
+func generate_border():
+	for x in range(-1, Globals.MAP_SIZE+1):
+		rock_layer.set_cell(x, -1, ROCK)
+		rock_layer.set_cell(x, Globals.MAP_SIZE, ROCK)
+	
+	for y in range(-1, Globals.MAP_SIZE+1):
+		rock_layer.set_cell(-1, y, ROCK)
+		rock_layer.set_cell(Globals.MAP_SIZE, y, ROCK)
+	
+	rock_layer.update_bitmask_region(Vector2.ZERO, Vector2(Globals.MAP_SIZE-1,Globals.MAP_SIZE-1))
+	
 func place_wall_if_empty(x, y, cell):
 	if walls_layer.get_cell(x, y) != -1: return false
 	walls_layer.set_cell(x, y, cell)
@@ -93,20 +105,25 @@ func place_wall_if_empty(x, y, cell):
 # If the wall should instead be a corner, then it is set to the correct corner piece
 func place_wall_or_corner(x, y, wall_varient):
 	var down = rock_layer.get_cell(x, y+1) == ROCK
-	var down_left = rock_layer.get_cell(x-1, y+1) == ROCK
-	var down_right = rock_layer.get_cell(x+1, y+1) == ROCK
-	
-	# If there is rock_layer beneath this tile
-	# AND there is rock_layer down and to the left OR down and to the right of this tile,
-	# then place the original bottom and top walls_layer varients
-	if down and (down_left or down_right):
-		walls_layer.set_cell(x, y, WALL_BOTTOM[wall_varient])
-		place_wall_if_empty(x, y-1, WALL_TOP[wall_varient])
-		return true
-		
+	var up_left = rock_layer.get_cell(x-1, y-1) == ROCK
+	var up_right = rock_layer.get_cell(x+1, y-1) == ROCK
 	var left = rock_layer.get_cell(x-1, y) == ROCK
 	var right = rock_layer.get_cell(x+1, y) == ROCK
 	
+	# If there is rock beneath this tile
+	# AND there is rock down and to the left OR down and to the right of this tile,
+	# then place the original bottomd and top walls varients
+	if down:
+		# If there is no rock on either side, always place a middle wall
+		# Else, place whatever varient it was originally
+		if not (left or right) and (up_left and up_right):
+			walls_layer.set_cell(x, y, WALL_BOTTOM["middle"])
+			place_wall_if_empty(x, y-1, WALL_TOP["middle"])
+		else:
+			walls_layer.set_cell(x, y, WALL_BOTTOM[wall_varient])
+			place_wall_if_empty(x, y-1, WALL_TOP[wall_varient])
+		return true
+		
 	# If both neighbours are empty
 	if not (left or right):
 		# Check tiles above neighbours
