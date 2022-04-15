@@ -113,12 +113,12 @@ func attack():
 		yield(player_anim, "animation_finished")
 		attacking = false
 	
-const MAX_ENEMIES_TO_DAMAGE = 4
-const MAX_OBJECTS_TO_MINE = 1
+const MAX_ENEMIES_TO_DAMAGE_MELEE = 4 # Damage up to 4 enemies in one swing
+const MAX_OBJECTS_TO_MINE = 1 # By default, only mine 1 object at a time
 	
 func damage_enemies():
 	var areas = melee_box.get_overlapping_areas()
-	for a in range(min(MAX_ENEMIES_TO_DAMAGE, areas.size())):
+	for a in range(min(MAX_ENEMIES_TO_DAMAGE_MELEE, areas.size())):
 		var hit_box: Area2D = areas[a]
 		var enemy = hit_box.get_parent()
 		
