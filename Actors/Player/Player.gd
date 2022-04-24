@@ -34,8 +34,8 @@ func _unhandled_input(event):
 	elif event.is_action_pressed("show_path"):
 		show_path()
 
-func determine_velocity():
-	if not attacking: velocity = Vector2.ZERO # Reset velocity to 0 before inputs
+func determine_velocity(delta):
+	velocity = Vector2.ZERO # Reset velocity to 0 before inputs
 	
 	# Alter velocity vector based on player input
 	if Input.is_action_pressed("left"): velocity.x -= 1
@@ -44,7 +44,7 @@ func determine_velocity():
 	if Input.is_action_pressed("down"): velocity.y += 1
 	
 	# Normalize vector
-	velocity = velocity.normalized()
+	velocity = velocity.normalized() * move_speed * delta
 
 func determine_facing():
 	var mouse_pos = get_local_mouse_position()
@@ -57,7 +57,13 @@ func determine_facing():
 		facing = Vector2.UP
 	else: # Down
 		facing = Vector2.DOWN
+
+func _physics_process(delta):
+	determine_velocity(delta)
 	
+	# Move the player using velocity vector, then set velocity to the result of us attempting to move.
+	velocity = move_and_slide(velocity)
+
 func _process(delta):
 	var facing_before = facing
 	determine_facing()
@@ -69,7 +75,6 @@ func _process(delta):
 			_: move_child(get_node("BodySprite"), 0)
 	
 	if not attacking:
-		determine_velocity()
 		if velocity != Vector2.ZERO:
 			if facing.x > 0: player_anim.play("WalkRight")
 			elif facing.x < 0: player_anim.play("WalkLeft")
@@ -85,12 +90,6 @@ func _process(delta):
 	var mouse_pos = get_global_mouse_position()
 	melee_box.look_at(mouse_pos)
 	mine_box.look_at(mouse_pos)
-	
-	# TODO: Multiply by delta!
-	velocity = velocity * delta * move_speed
-	
-	# Move the player using velocity vector, then set velocity to the result of us attempting to move.
-	velocity = move_and_slide(velocity)
 
 func equip(new_id: int):
 	equiped = new_id
