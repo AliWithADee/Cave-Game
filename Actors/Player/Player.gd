@@ -1,7 +1,7 @@
 extends KinematicBody2D
 
 # Constants
-export(int) var move_speed = 100
+export(int) var move_speed = 5000
 enum Equipables { PICKAXE, REVOLVER, DYNAMITE }
 const pickaxe_texture = preload("res://Assets/Miner/Pickaxe.png")
 const revolver_texture = preload("res://Assets/Miner/Revolver.png")
@@ -15,8 +15,8 @@ onready var mine_box: Area2D = $MineHurtBox
 
 # Runtime variables
 export(Equipables) var equiped = Equipables.PICKAXE
-onready var facing = Vector2.DOWN # Facing should never be 0 so set to DOWN by default
-onready var velocity = Vector2.ZERO
+var facing = Vector2.DOWN # Facing should never be 0 so set to DOWN by default
+var velocity = Vector2.ZERO
 var attacking = false
 
 func _ready():
@@ -31,6 +31,8 @@ func _unhandled_input(event):
 		equip(Equipables.REVOLVER)
 	elif event.is_action_pressed("dynamite"):
 		equip(Equipables.DYNAMITE)
+	elif event.is_action_pressed("show_path"):
+		show_path()
 
 func determine_velocity():
 	if not attacking: velocity = Vector2.ZERO # Reset velocity to 0 before inputs
@@ -41,8 +43,8 @@ func determine_velocity():
 	if Input.is_action_pressed("up"): velocity.y -= 1
 	if Input.is_action_pressed("down"): velocity.y += 1
 	
-	# Normalize and scale velocity with speed value
-	velocity = velocity.normalized() * move_speed
+	# Normalize vector
+	velocity = velocity.normalized()
 
 func determine_facing():
 	var mouse_pos = get_local_mouse_position()
@@ -83,6 +85,9 @@ func _process(delta):
 	var mouse_pos = get_global_mouse_position()
 	melee_box.look_at(mouse_pos)
 	mine_box.look_at(mouse_pos)
+	
+	# TODO: Multiply by delta!
+	velocity = velocity * delta * move_speed
 	
 	# Move the player using velocity vector, then set velocity to the result of us attempting to move.
 	velocity = move_and_slide(velocity)
@@ -133,3 +138,8 @@ func mine_objects():
 		
 		if other.has_method("on_player_mine"):
 			other.on_player_mine(mine_box.get_node("CollisionShape").global_position)
+
+# DEBUG: Used to test pathfinding
+func show_path():
+	var ground_layer = get_parent().get_parent().get_node("World/GroundLayer")
+	
