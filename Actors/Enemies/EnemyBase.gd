@@ -41,7 +41,6 @@ func _process(delta):
 	velocity = Vector2.ZERO
 	if has_aggro:
 		get_path_to_player()
-		print(path)
 	elif search_timer.is_stopped():
 		search_timer.start()
 	determine_velocity(delta)
