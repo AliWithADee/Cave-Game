@@ -10,7 +10,7 @@ onready var rock_layer = level.get_node("World/RockLayer")
 
 const CLUSTER_CHANCE = 40
 const HERMIT_CHANCE = 10
-var occupied = [] # List of tile positions currently occupied by an object
+var occupied = [] # List of tile positions occupied by an object
 
 func clear_objects():
 	for child in get_children():
@@ -83,6 +83,7 @@ func spawn_player_and_exit():
 	var player = PLAYER.instance()
 	var player_pos = get_random_pos()
 	player.position = tile_pos_to_world_pos(player_pos)
+	occupied.append(player)
 	
 	var camera: Camera2D = player.get_node("Camera")
 	camera.limit_left = 0

@@ -1,5 +1,6 @@
 extends TileMap
 
+onready var ground_layer = get_parent().get_node("GroundLayer")
 onready var walls_layer = get_parent().get_node("WallsLayer")
 
 const ROCK = 0
@@ -71,6 +72,7 @@ func on_player_mine(pos) -> bool:
 	if x <= 0 or x >= Globals.MAP_SIZE-1 or y <= 0 or y >= Globals.MAP_SIZE-1: return false
 		
 	set_cell(x, y, -1)
+	ground_layer.set_cell(x, y, ground_layer.GROUND)
 	walls_layer.update_walls()
 	update_bitmask_region(cell_pos-Vector2(1,1), cell_pos+Vector2(1,1))
 	return true
