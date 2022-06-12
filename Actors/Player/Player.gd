@@ -126,7 +126,6 @@ func damage_enemies():
 		var hit_box: Area2D = areas[a]
 		var enemy = hit_box.get_parent()
 		
-		print(enemy.name)
 		if enemy.has_method("on_player_hit"):
 			enemy.on_player_hit()
 

@@ -14,8 +14,6 @@ func _unhandled_input(event):
 	if event.is_action_pressed("zoom_in"):
 		zoom -= ZOOM_FACTOR * zoom
 		GameManager.camera_zoom = zoom
-		print(zoom)
 	elif event.is_action_pressed("zoom_out"):
 		zoom += ZOOM_FACTOR * zoom
 		GameManager.camera_zoom = zoom
-		print(zoom)

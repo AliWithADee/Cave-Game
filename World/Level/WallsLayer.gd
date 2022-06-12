@@ -21,8 +21,8 @@ const WALL_CORNER_LEFT_EDGE = 11
 const WALL_CORNER_RIGHT_EDGE = 12
 
 func clear_walls():
-	for x in range(Globals.MAP_SIZE):
-		for y in range(Globals.MAP_SIZE):
+	for x in range(Globals.CAVE_SIZE):
+		for y in range(Globals.CAVE_SIZE):
 			set_cell(x, y, -1)
 
 func place_wall_if_empty(x, y, cell):
@@ -79,7 +79,7 @@ func place_wall_or_corner(x, y, wall_varient):
 		
 	return false
 
-func update_walls(top_left = Vector2(0,0), bottom_right = Vector2(Globals.MAP_SIZE-1, Globals.MAP_SIZE-1)):
+func update_walls(top_left = Vector2(0,0), bottom_right = Vector2(Globals.CAVE_SIZE-1, Globals.CAVE_SIZE-1)):
 	# Clear tilemap
 	clear_walls()
 	

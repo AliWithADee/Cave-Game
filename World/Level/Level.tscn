@@ -1,9 +1,9 @@
-[gd_scene load_steps=15 format=2]
+[gd_scene load_steps=23 format=2]
 
 [ext_resource path="res://Assets/World/RockTileset.tres" type="TileSet" id=1]
 [ext_resource path="res://Assets/World/WallsTileset.tres" type="TileSet" id=2]
 [ext_resource path="res://Assets/World/spr_cave.png" type="Texture" id=3]
-[ext_resource path="res://Assets/Enemy.png" type="Texture" id=4]
+[ext_resource path="res://Assets/GreenSquare.png" type="Texture" id=4]
 [ext_resource path="res://World/Level/Level.gd" type="Script" id=5]
 [ext_resource path="res://World/Level/RockLayer.gd" type="Script" id=6]
 [ext_resource path="res://Actors/Player/Player.tscn" type="PackedScene" id=7]
@@ -12,12 +12,78 @@
 [ext_resource path="res://World/Level/Objects.gd" type="Script" id=10]
 [ext_resource path="res://Actors/Enemies/PebbleHermit.tscn" type="PackedScene" id=11]
 [ext_resource path="res://World/Level/WallsLayer.gd" type="Script" id=12]
+[ext_resource path="res://Assets/Miner/Cursor.png" type="Texture" id=13]
+[ext_resource path="res://Actors/Player/Cursor.gd" type="Script" id=14]
+[ext_resource path="res://World/Level/Map.gd" type="Script" id=15]
+[ext_resource path="res://Assets/LightSquare.png" type="Texture" id=16]
+[ext_resource path="res://Assets/DarkSquare.png" type="Texture" id=17]
+[ext_resource path="res://Assets/RedSquare.png" type="Texture" id=18]
 
-[sub_resource type="NavigationPolygon" id=1]
+[sub_resource type="Animation" id=1]
+length = 6.0
+loop = true
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:rotation_degrees")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 6 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 0,
+"values": [ 0.0, 360.0 ]
+}
+
+[sub_resource type="TileSet" id=2]
+0/name = "DarkSquare.png 0"
+0/texture = ExtResource( 17 )
+0/tex_offset = Vector2( 0, 0 )
+0/modulate = Color( 1, 1, 1, 1 )
+0/region = Rect2( 0, 0, 1, 1 )
+0/tile_mode = 0
+0/occluder_offset = Vector2( 0, 0 )
+0/navigation_offset = Vector2( 0, 0 )
+0/shape_offset = Vector2( 0, 0 )
+0/shape_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+0/shape_one_way = false
+0/shape_one_way_margin = 0.0
+0/shapes = [  ]
+0/z_index = 0
+1/name = "LightSquare.png 1"
+1/texture = ExtResource( 16 )
+1/tex_offset = Vector2( 0, 0 )
+1/modulate = Color( 1, 1, 1, 1 )
+1/region = Rect2( 0, 0, 1, 1 )
+1/tile_mode = 0
+1/occluder_offset = Vector2( 0, 0 )
+1/navigation_offset = Vector2( 0, 0 )
+1/shape_offset = Vector2( 0, 0 )
+1/shape_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+1/shape_one_way = false
+1/shape_one_way_margin = 0.0
+1/shapes = [  ]
+1/z_index = 0
+2/name = "GreenSquare.png 2"
+2/texture = ExtResource( 4 )
+2/tex_offset = Vector2( 0, 0 )
+2/modulate = Color( 1, 1, 1, 1 )
+2/region = Rect2( 0, 0, 1, 1 )
+2/tile_mode = 0
+2/occluder_offset = Vector2( 0, 0 )
+2/navigation_offset = Vector2( 0, 0 )
+2/shape_offset = Vector2( 0, 0 )
+2/shape_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+2/shape_one_way = false
+2/shape_one_way_margin = 0.0
+2/shapes = [  ]
+2/z_index = 0
+
+[sub_resource type="NavigationPolygon" id=3]
 vertices = PoolVector2Array( 32, 32, 0, 32, 0, 0, 32, 0 )
 polygons = [ PoolIntArray( 0, 1, 2, 3 ) ]
 
-[sub_resource type="TileSet" id=2]
+[sub_resource type="TileSet" id=4]
 0/name = "Ground 0"
 0/texture = ExtResource( 3 )
 0/tex_offset = Vector2( 0, 0 )
@@ -26,7 +92,7 @@ polygons = [ PoolIntArray( 0, 1, 2, 3 ) ]
 0/tile_mode = 0
 0/occluder_offset = Vector2( 0, 0 )
 0/navigation_offset = Vector2( 0, 0 )
-0/navigation = SubResource( 1 )
+0/navigation = SubResource( 3 )
 0/shape_offset = Vector2( 0, 0 )
 0/shape_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
 0/shape_one_way = false
@@ -34,7 +100,7 @@ polygons = [ PoolIntArray( 0, 1, 2, 3 ) ]
 0/shapes = [  ]
 0/z_index = 0
 1/name = "Red 1"
-1/texture = ExtResource( 4 )
+1/texture = ExtResource( 18 )
 1/tex_offset = Vector2( 0, 0 )
 1/modulate = Color( 1, 1, 1, 1 )
 1/region = Rect2( 0, 0, 32, 32 )
@@ -51,11 +117,30 @@ polygons = [ PoolIntArray( 0, 1, 2, 3 ) ]
 [node name="Level" type="Node2D"]
 script = ExtResource( 5 )
 
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="Cursor" type="Sprite" parent="CanvasLayer"]
+position = Vector2( 0, -20 )
+scale = Vector2( 1.5, 1.5 )
+z_index = 5
+texture = ExtResource( 13 )
+script = ExtResource( 14 )
+
+[node name="CursorAnimation" type="AnimationPlayer" parent="CanvasLayer/Cursor"]
+anims/Idle = SubResource( 1 )
+
+[node name="Map" type="TileMap" parent="CanvasLayer"]
+scale = Vector2( 5, 5 )
+tile_set = SubResource( 2 )
+cell_size = Vector2( 1, 1 )
+format = 1
+script = ExtResource( 15 )
+
 [node name="World" type="Navigation2D" parent="."]
 
 [node name="GroundLayer" type="TileMap" parent="World"]
 z_index = -1
-tile_set = SubResource( 2 )
+tile_set = SubResource( 4 )
 cell_size = Vector2( 32, 32 )
 cell_custom_transform = Transform2D( 8, 0, 0, 8, 0, 0 )
 collision_mask = 0
@@ -86,7 +171,7 @@ script = ExtResource( 6 )
 script = ExtResource( 10 )
 
 [node name="Player" parent="Objects" instance=ExtResource( 7 )]
-position = Vector2( 496, 464 )
+position = Vector2( 336, 400 )
 
 [node name="LevelExit" parent="Objects" instance=ExtResource( 8 )]
 position = Vector2( 528, 464 )

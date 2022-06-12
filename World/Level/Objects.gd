@@ -15,9 +15,10 @@ var occupied = [] # List of tile positions occupied by an object
 func clear_objects():
 	for child in get_children():
 		remove_child(child)
+	occupied = []
 
 func tile_pos_to_world_pos(pos: Vector2) -> Vector2:
-	return rock_layer.map_to_world(pos) + Vector2(Globals.CELL_SIZE/2, Globals.CELL_SIZE/2)
+	return rock_layer.map_to_world(pos) + Vector2(Globals.CAVE_CELL_SIZE/2, Globals.CAVE_CELL_SIZE/2)
 
 func is_valid_position(pos: Vector2):
 	if rock_layer.get_cell(pos.x, pos.y) != -1: return false
@@ -25,10 +26,9 @@ func is_valid_position(pos: Vector2):
 	return true
 
 func get_random_pos() -> Vector2:
-	randomize()
-	var pos = Vector2(randi() % Globals.MAP_SIZE, randi() % Globals.MAP_SIZE)
+	var pos = Vector2(randi() % Globals.CAVE_SIZE, randi() % Globals.CAVE_SIZE)
 	while not is_valid_position(pos):
-		pos = Vector2(randi() % Globals.MAP_SIZE, randi() % Globals.MAP_SIZE)
+		pos = Vector2(randi() % Globals.CAVE_SIZE, randi() % Globals.CAVE_SIZE)
 	return pos
 
 func spawn_stalagmite(pos: Vector2):
@@ -59,7 +59,7 @@ func spawn_stalagmite_cluster():
 					else: spawn_stalagmite(pos2)
 
 func spawn_stalagmites():
-	for i in range(int(Globals.MAP_SIZE/2)):
+	for i in range(int(Globals.CAVE_SIZE/2)):
 		spawn_stalagmite_cluster()
 
 func is_valid_level_exit_pos(exit_pos: Vector2, player_pos: Vector2):
@@ -74,7 +74,7 @@ func is_valid_level_exit_pos(exit_pos: Vector2, player_pos: Vector2):
 	if not (valid and valid_left and valid_right and valid_up and valid_up_left and valid_up_right):
 		return false
 	
-	return player_pos.distance_to(exit_pos) >= Globals.MAP_SIZE*0.5
+	return player_pos.distance_to(exit_pos) >= Globals.CAVE_SIZE*0.5
 
 func spawn_player_and_exit():
 	if has_node("Player"):
@@ -83,13 +83,13 @@ func spawn_player_and_exit():
 	var player = PLAYER.instance()
 	var player_pos = get_random_pos()
 	player.position = tile_pos_to_world_pos(player_pos)
-	occupied.append(player)
+	occupied.append(player_pos)
 	
 	var camera: Camera2D = player.get_node("Camera")
 	camera.limit_left = 0
 	camera.limit_top = 0
-	camera.limit_right = Globals.MAP_SIZE * Globals.CELL_SIZE
-	camera.limit_bottom = Globals.MAP_SIZE * Globals.CELL_SIZE
+	camera.limit_right = Globals.CAVE_SIZE * Globals.CAVE_CELL_SIZE
+	camera.limit_bottom = Globals.CAVE_SIZE * Globals.CAVE_CELL_SIZE
 	
 	add_child(player)
 	
