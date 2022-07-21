@@ -1,17 +1,12 @@
 extends TileMap
 
-onready var rock_layer = get_parent().get_node("RockLayer")
-onready var objects = get_parent().get_parent().get_node("Objects")
+const NAVABLE = 0
+const NON_NAVABLE = 1
 
-const GROUND = 0
-
-func initialise_ground_layer():
+func update_ground_layer(rock_layer: TileMap):
 	for x in range(Globals.CAVE_SIZE):
 		for y in range(Globals.CAVE_SIZE):
 			if rock_layer.get_cell(x, y) == -1: # not (Vector2(x, y) in objects.occupied) and 
-				set_cell(x, y, GROUND)
+				set_cell(x, y, NAVABLE)
 			else:
-				set_cell(x, y, 1)
-
-func initialise_pathfinding():
-	pass
+				set_cell(x, y, NON_NAVABLE)

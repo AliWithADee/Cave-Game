@@ -6,7 +6,7 @@
 [ext_resource path="res://Actors/Player/Player.gd" type="Script" id=6]
 [ext_resource path="res://Actors/SoftCollision.tscn" type="PackedScene" id=7]
 
-[sub_resource type="Animation" id=2]
+[sub_resource type="Animation" id=1]
 length = 1.1
 loop = true
 tracks/0/type = "value"
@@ -70,7 +70,7 @@ tracks/4/keys = {
 "values": [ true ]
 }
 
-[sub_resource type="Animation" id=3]
+[sub_resource type="Animation" id=2]
 length = 1.1
 loop = true
 tracks/0/type = "value"
@@ -134,7 +134,7 @@ tracks/4/keys = {
 "values": [ Vector2( -18, -22 ) ]
 }
 
-[sub_resource type="Animation" id=4]
+[sub_resource type="Animation" id=3]
 length = 1.1
 loop = true
 tracks/0/type = "value"
@@ -198,7 +198,7 @@ tracks/4/keys = {
 "values": [ false ]
 }
 
-[sub_resource type="Animation" id=5]
+[sub_resource type="Animation" id=4]
 length = 1.1
 loop = true
 tracks/0/type = "value"
@@ -262,7 +262,7 @@ tracks/4/keys = {
 "values": [ false ]
 }
 
-[sub_resource type="Animation" id=6]
+[sub_resource type="Animation" id=5]
 length = 0.21
 step = 0.01
 tracks/0/type = "value"
@@ -326,7 +326,7 @@ tracks/4/keys = {
 "values": [ Vector2( 0, 4 ) ]
 }
 
-[sub_resource type="Animation" id=7]
+[sub_resource type="Animation" id=6]
 length = 0.16
 step = 0.01
 tracks/0/type = "value"
@@ -390,7 +390,7 @@ tracks/4/keys = {
 "values": [ Vector2( 0, 3 ) ]
 }
 
-[sub_resource type="Animation" id=8]
+[sub_resource type="Animation" id=7]
 length = 0.14
 step = 0.01
 tracks/0/type = "value"
@@ -454,7 +454,7 @@ tracks/4/keys = {
 "values": [ Vector2( 1, 2 ) ]
 }
 
-[sub_resource type="Animation" id=9]
+[sub_resource type="Animation" id=8]
 length = 0.21
 step = 0.01
 tracks/0/type = "value"
@@ -518,7 +518,7 @@ tracks/4/keys = {
 "values": [ Vector2( 0, 1 ) ]
 }
 
-[sub_resource type="Animation" id=10]
+[sub_resource type="Animation" id=9]
 length = 0.6
 loop = true
 tracks/0/type = "value"
@@ -582,7 +582,7 @@ tracks/4/keys = {
 "values": [ true ]
 }
 
-[sub_resource type="Animation" id=11]
+[sub_resource type="Animation" id=10]
 length = 0.6
 loop = true
 tracks/0/type = "value"
@@ -646,7 +646,7 @@ tracks/4/keys = {
 "values": [ true, false ]
 }
 
-[sub_resource type="Animation" id=12]
+[sub_resource type="Animation" id=11]
 length = 0.6
 loop = true
 tracks/0/type = "value"
@@ -710,7 +710,7 @@ tracks/4/keys = {
 "values": [ false ]
 }
 
-[sub_resource type="Animation" id=13]
+[sub_resource type="Animation" id=12]
 length = 0.6
 loop = true
 tracks/0/type = "value"
@@ -774,22 +774,22 @@ tracks/4/keys = {
 "values": [ false ]
 }
 
-[sub_resource type="CapsuleShape2D" id=14]
+[sub_resource type="CapsuleShape2D" id=13]
 radius = 4.0
 height = 3.0
 
-[sub_resource type="CapsuleShape2D" id=15]
+[sub_resource type="CapsuleShape2D" id=14]
 radius = 5.5
 height = 8.0
 
-[sub_resource type="CapsuleShape2D" id=16]
+[sub_resource type="CapsuleShape2D" id=15]
 radius = 9.0
 height = 18.094
 
-[sub_resource type="CircleShape2D" id=17]
+[sub_resource type="CircleShape2D" id=16]
 radius = 6.0
 
-[sub_resource type="CapsuleShape2D" id=18]
+[sub_resource type="CapsuleShape2D" id=17]
 radius = 4.0
 height = 3.0
 
@@ -813,30 +813,30 @@ offset = Vector2( -18, -22 )
 flip_h = true
 
 [node name="PlayerAnimation" type="AnimationPlayer" parent="."]
-anims/IdleDown = SubResource( 2 )
-anims/IdleLeft = SubResource( 3 )
-anims/IdleRight = SubResource( 4 )
-anims/IdleUp = SubResource( 5 )
-anims/MeleeDown = SubResource( 6 )
-anims/MeleeLeft = SubResource( 7 )
-anims/MeleeRight = SubResource( 8 )
-anims/MeleeUp = SubResource( 9 )
-anims/WalkDown = SubResource( 10 )
-anims/WalkLeft = SubResource( 11 )
-anims/WalkRight = SubResource( 12 )
-anims/WalkUp = SubResource( 13 )
+anims/IdleDown = SubResource( 1 )
+anims/IdleLeft = SubResource( 2 )
+anims/IdleRight = SubResource( 3 )
+anims/IdleUp = SubResource( 4 )
+anims/MeleeDown = SubResource( 5 )
+anims/MeleeLeft = SubResource( 6 )
+anims/MeleeRight = SubResource( 7 )
+anims/MeleeUp = SubResource( 8 )
+anims/WalkDown = SubResource( 9 )
+anims/WalkLeft = SubResource( 10 )
+anims/WalkRight = SubResource( 11 )
+anims/WalkUp = SubResource( 12 )
 
 [node name="CollisionShape" type="CollisionShape2D" parent="."]
 position = Vector2( 0, 5.5 )
 rotation = 1.5708
-shape = SubResource( 14 )
+shape = SubResource( 13 )
 
 [node name="HitBox" type="Area2D" parent="."]
 collision_layer = 4
 collision_mask = 0
 
 [node name="CollisionShape" type="CollisionShape2D" parent="HitBox"]
-shape = SubResource( 15 )
+shape = SubResource( 14 )
 
 [node name="MeleeHurtBox" type="Area2D" parent="."]
 collision_layer = 0
@@ -844,7 +844,7 @@ collision_mask = 8
 
 [node name="CollisionShape" type="CollisionShape2D" parent="MeleeHurtBox"]
 position = Vector2( 20, 0 )
-shape = SubResource( 16 )
+shape = SubResource( 15 )
 
 [node name="MineHurtBox" type="Area2D" parent="."]
 collision_layer = 0
@@ -852,7 +852,7 @@ collision_mask = 2
 
 [node name="CollisionShape" type="CollisionShape2D" parent="MineHurtBox"]
 position = Vector2( 15, 0 )
-shape = SubResource( 17 )
+shape = SubResource( 16 )
 
 [node name="Camera" type="Camera2D" parent="."]
 current = true
@@ -867,6 +867,6 @@ script = ExtResource( 4 )
 [node name="CollisionShape2D" parent="SoftCollision" index="0"]
 position = Vector2( 0, 5.5 )
 rotation = 1.5708
-shape = SubResource( 18 )
+shape = SubResource( 17 )
 
 [editable path="SoftCollision"]

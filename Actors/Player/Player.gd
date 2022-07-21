@@ -1,38 +1,43 @@
 extends KinematicBody2D
 
-# Constants
-export(int) var move_speed = 5000
 enum Equipables { PICKAXE, REVOLVER, DYNAMITE }
-const pickaxe_texture = preload("res://Assets/Miner/Pickaxe.png")
-const revolver_texture = preload("res://Assets/Miner/Revolver.png")
-const dynamite_texture = preload("res://Assets/Miner/Dynamite.png")
+
+# Constants
+const MOVE_SPEED = 5000
+const PICKAXE_TEXTURE = preload("res://Assets/Miner/Pickaxe.png")
+const REVOLVER_TEXTURE = preload("res://Assets/Miner/Revolver.png")
+const DYNAMITE_TEXTURE = preload("res://Assets/Miner/Dynamite.png")
+const MAX_ENEMIES_MELEE = 4 # Damage up to 4 enemies in one swing
+const MAX_OBJECTS_MINE = 1 # By default, only mine 1 object at a time
 
 # Node References
+onready var body_sprite: Sprite = $BodySprite
 onready var item_sprite: Sprite = $ItemSprite
 onready var player_anim: AnimationPlayer = $PlayerAnimation
 onready var melee_box: Area2D = $MeleeHurtBox
 onready var mine_box: Area2D = $MineHurtBox
 
 # Runtime variables
-export(Equipables) var equiped = Equipables.PICKAXE
 var facing = Vector2.DOWN # Facing should never be 0 so set to DOWN by default
 var velocity = Vector2.ZERO
+var equipped = Equipables.PICKAXE
 var attacking = false
 
 func _ready():
 	update_item()
 
 func _unhandled_input(event):
-	if event.is_action_pressed("attack"):
-		attack()
+	if event.is_action_pressed("use_tool"):
+		use_tool()
 	elif event.is_action_pressed("pickaxe"):
 		equip(Equipables.PICKAXE)
 	elif event.is_action_pressed("revolver"):
 		equip(Equipables.REVOLVER)
 	elif event.is_action_pressed("dynamite"):
 		equip(Equipables.DYNAMITE)
-	elif event.is_action_pressed("show_path"):
-		show_path()
+
+func get_camera():
+	return get_node("Camera")
 
 func determine_velocity(delta):
 	velocity = Vector2.ZERO # Reset velocity to 0 before inputs
@@ -44,7 +49,7 @@ func determine_velocity(delta):
 	if Input.is_action_pressed("down"): velocity.y += 1
 	
 	# Normalize vector
-	velocity = velocity.normalized() * move_speed * delta
+	velocity = velocity.normalized() * MOVE_SPEED * delta
 
 func determine_facing():
 	var mouse_pos = get_local_mouse_position()
@@ -71,8 +76,8 @@ func _process(delta):
 	# This handles the rendering order of the body and item sprites
 	if facing != facing_before:
 		match facing:
-			Vector2.UP: move_child(get_node("BodySprite"), 1)
-			_: move_child(get_node("BodySprite"), 0)
+			Vector2.UP: move_child(body_sprite, 1)
+			_: move_child(body_sprite, 0)
 	
 	if not attacking:
 		if velocity != Vector2.ZERO:
@@ -91,19 +96,19 @@ func _process(delta):
 	melee_box.look_at(mouse_pos)
 	mine_box.look_at(mouse_pos)
 
-func equip(new_id: int):
-	equiped = new_id
+func equip(new_tool: int):
+	equipped = new_tool
 	update_item()
 
 func update_item():
-	match equiped:
-		Equipables.REVOLVER: item_sprite.texture = revolver_texture
-		Equipables.DYNAMITE: item_sprite.texture = dynamite_texture
-		Equipables.PICKAXE: item_sprite.texture = pickaxe_texture
+	match equipped:
+		Equipables.REVOLVER: item_sprite.texture = REVOLVER_TEXTURE
+		Equipables.DYNAMITE: item_sprite.texture = DYNAMITE_TEXTURE
+		Equipables.PICKAXE: item_sprite.texture = PICKAXE_TEXTURE
 		_: item_sprite.texture = null
 
-func attack():
-	if not attacking and equiped == Equipables.PICKAXE:
+func use_tool():
+	if not attacking and equipped == Equipables.PICKAXE:
 		attacking = true
 		
 		if facing.x > 0: player_anim.play("MeleeRight")
@@ -117,27 +122,31 @@ func attack():
 		yield(player_anim, "animation_finished")
 		attacking = false
 	
-const MAX_ENEMIES_TO_DAMAGE_MELEE = 4 # Damage up to 4 enemies in one swing
-const MAX_OBJECTS_TO_MINE = 1 # By default, only mine 1 object at a time
-	
 func damage_enemies():
 	var areas = melee_box.get_overlapping_areas()
-	for a in range(min(MAX_ENEMIES_TO_DAMAGE_MELEE, areas.size())):
+	for a in range(min(MAX_ENEMIES_MELEE, areas.size())):
 		var hit_box: Area2D = areas[a]
 		var enemy = hit_box.get_parent()
 		
-		if enemy.has_method("on_player_hit"):
-			enemy.on_player_hit()
+		if enemy.has_method("take_damage"):
+			enemy.take_damage(1)
 
 func mine_objects():
 	var bodies = mine_box.get_overlapping_bodies()
-	for b in range(min(MAX_OBJECTS_TO_MINE, bodies.size())):
-		var other = bodies[b]
-		
-		if other.has_method("on_player_mine"):
-			other.on_player_mine(mine_box.get_node("CollisionShape").global_position)
-
-# DEBUG: Used to test pathfinding
-func show_path():
-	var ground_layer = get_parent().get_parent().get_node("World/GroundLayer")
+	for b in range(bodies.size()):
+		var node = bodies[b]
+		if node.has_method("on_player_mine"):
+			node.on_player_mine(mine_box.get_node("CollisionShape").global_position)
 	
+	var areas = mine_box.get_overlapping_areas()
+	for a in range(areas.size()):
+		var area = areas[a]
+		var node = area.get_parent()
+		
+		if node.has_method("on_player_mine"):
+			node.on_player_mine(mine_box.get_node("CollisionShape").global_position)
+	
+func take_damage(damage: int):
+	body_sprite.modulate = Color.red
+	yield(Utils.create_timer(0.1), "timeout")
+	body_sprite.modulate = Color.white
